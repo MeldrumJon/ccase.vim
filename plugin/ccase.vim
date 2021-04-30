@@ -413,7 +413,7 @@ function! s:CtConsoleDiff( fname, diff_version )
 
   let l:splittype = ""
   if g:ccaseDiffVertSplit == 1
-    let l:splittype=":vert diffsplit "
+    let l:splittype=":vert lefta diffsplit "
   else
     let l:splittype=":diffsplit "
   endif
@@ -1192,119 +1192,119 @@ function! s:OpenInNewWin(filename)
 endfun " s:OpenInNewWin
 
 " ===========================================================================
-fun! s:InstallDocumentation(full_name, revision)
-" Install help documentation.
-" Arguments:
-"   full_name: Full name of this vim plugin script, including path name.
-"   revision:  Revision of the vim script. #version# mark in the document file
-"              will be replaced with this string with 'v' prefix.
-" Return:
-"   0 if new document installed, 1 otherwise.
-" ===========================================================================
-  " Name of the document path based on the system we use:
-  if (has("unix"))
-    " On UNIX like system, using forward slash:
-    let l:slash_char = '/'
-    let l:mkdir_cmd  = ':silent !mkdir -p '
-  else
-    " On M$ system, use backslash. Also mkdir syntax is different.
-    " This should only work on W2K and up.
-    let l:slash_char = '\'
-    let l:mkdir_cmd  = ':silent !mkdir '
-  endif
-
-  let l:doc_path = l:slash_char . 'doc'
-  let l:doc_home = l:slash_char . '.vim' . l:slash_char . 'doc'
-
-  " Figure out document path based on full name of this script:
-  let l:vim_plugin_path = fnamemodify(a:full_name, ':h')
-  let l:vim_doc_path    = fnamemodify(a:full_name, ':h:h') . l:doc_path
-  if (!(filewritable(l:vim_doc_path) == 2))
-    echomsg "Doc path: " . l:vim_doc_path
-    execute l:mkdir_cmd . l:vim_doc_path
-    if (!(filewritable(l:vim_doc_path) == 2))
-      " Try a default configuration in user home:
-      let l:vim_doc_path = expand("~") . l:doc_home
-      if (!(filewritable(l:vim_doc_path) == 2))
-        execute l:mkdir_cmd . l:vim_doc_path
-        if (!(filewritable(l:vim_doc_path) == 2))
-          " Put a warning:
-          echomsg "Unable to open documentation directory"
-          echomsg " type :help add-local-help for more informations."
-          return 1
-        endif
-      endif
-    endif
-  endif
-
-  " Exit if we have problem to access the document directory:
-  if (!isdirectory(l:vim_plugin_path)
-        \ || !isdirectory(l:vim_doc_path)
-        \ || filewritable(l:vim_doc_path) != 2)
-    return 1
-  endif
-
-  " Full name of script and documentation file:
-  let l:script_name = fnamemodify(a:full_name, ':t')
-  let l:doc_name    = fnamemodify(a:full_name, ':t:r') . '.txt'
-  let l:plugin_file = l:vim_plugin_path . l:slash_char . l:script_name
-  let l:doc_file    = l:vim_doc_path    . l:slash_char . l:doc_name
-
-  " Bail out if document file is still up to date:
-  if (filereadable(l:doc_file)  &&
-        \ getftime(l:plugin_file) < getftime(l:doc_file))
-    return 1
-  endif
-
-  " Prepare window position restoring command:
-  if (strlen(@%))
-    let l:go_back = 'b ' . bufnr("%")
-  else
-    let l:go_back = 'enew!'
-  endif
-
-  " Create a new buffer & read in the plugin file (me):
-  setl nomodeline
-  exe 'enew!'
-  exe 'r ' . l:plugin_file
-
-  setl modeline
-  let l:buf = bufnr("%")
-  setl noswapfile modifiable
-
-  norm zR
-  norm gg
-
-  " Delete from first line to a line starts with
-  " === START_DOC
-  1,/^=\{3,}\s\+START_DOC\C/ d
-
-  " Delete from a line starts with
-  " === END_DOC
-  " to the end of the documents:
-  /^=\{3,}\s\+END_DOC\C/,$ d
-
-  " Remove fold marks:
-  % s/{\{3}[1-9]/    /
-
-  " Add modeline for help doc: the modeline string is mangled intentionally
-  " to avoid it be recognized by VIM:
-  call append(line('$'), '')
-  call append(line('$'), ' v' . 'im:tw=78:ts=8:ft=help:norl:')
-
-  " Replace revision:
-  exe "normal :1s/#version#/ v" . a:revision . "/\<CR>"
-
-  " Save the help document:
-  exe 'w! ' . l:doc_file
-  exe l:go_back
-  exe 'bw ' . l:buf
-
-  " Build help tags:
-  exe 'helptags ' . l:vim_doc_path
-
-  return 0
-endfun " s:InstallDocumentation
+"fun! s:InstallDocumentation(full_name, revision)
+"" Install help documentation.
+"" Arguments:
+""   full_name: Full name of this vim plugin script, including path name.
+""   revision:  Revision of the vim script. #version# mark in the document file
+""              will be replaced with this string with 'v' prefix.
+"" Return:
+""   0 if new document installed, 1 otherwise.
+"" ===========================================================================
+"  " Name of the document path based on the system we use:
+"  if (has("unix"))
+"    " On UNIX like system, using forward slash:
+"    let l:slash_char = '/'
+"    let l:mkdir_cmd  = ':silent !mkdir -p '
+"  else
+"    " On M$ system, use backslash. Also mkdir syntax is different.
+"    " This should only work on W2K and up.
+"    let l:slash_char = '\'
+"    let l:mkdir_cmd  = ':silent !mkdir '
+"  endif
+"
+"  let l:doc_path = l:slash_char . 'doc'
+"  let l:doc_home = l:slash_char . '.vim' . l:slash_char . 'doc'
+"
+"  " Figure out document path based on full name of this script:
+"  let l:vim_plugin_path = fnamemodify(a:full_name, ':h')
+"  let l:vim_doc_path    = fnamemodify(a:full_name, ':h:h') . l:doc_path
+"  if (!(filewritable(l:vim_doc_path) == 2))
+"    echomsg "Doc path: " . l:vim_doc_path
+"    execute l:mkdir_cmd . l:vim_doc_path
+"    if (!(filewritable(l:vim_doc_path) == 2))
+"      " Try a default configuration in user home:
+"      let l:vim_doc_path = expand("~") . l:doc_home
+"      if (!(filewritable(l:vim_doc_path) == 2))
+"        execute l:mkdir_cmd . l:vim_doc_path
+"        if (!(filewritable(l:vim_doc_path) == 2))
+"          " Put a warning:
+"          echomsg "Unable to open documentation directory"
+"          echomsg " type :help add-local-help for more informations."
+"          return 1
+"        endif
+"      endif
+"    endif
+"  endif
+"
+"  " Exit if we have problem to access the document directory:
+"  if (!isdirectory(l:vim_plugin_path)
+"        \ || !isdirectory(l:vim_doc_path)
+"        \ || filewritable(l:vim_doc_path) != 2)
+"    return 1
+"  endif
+"
+"  " Full name of script and documentation file:
+"  let l:script_name = fnamemodify(a:full_name, ':t')
+"  let l:doc_name    = fnamemodify(a:full_name, ':t:r') . '.txt'
+"  let l:plugin_file = l:vim_plugin_path . l:slash_char . l:script_name
+"  let l:doc_file    = l:vim_doc_path    . l:slash_char . l:doc_name
+"
+"  " Bail out if document file is still up to date:
+"  if (filereadable(l:doc_file)  &&
+"        \ getftime(l:plugin_file) < getftime(l:doc_file))
+"    return 1
+"  endif
+"
+"  " Prepare window position restoring command:
+"  if (strlen(@%))
+"    let l:go_back = 'b ' . bufnr("%")
+"  else
+"    let l:go_back = 'enew!'
+"  endif
+"
+"  " Create a new buffer & read in the plugin file (me):
+"  setl nomodeline
+"  exe 'enew!'
+"  exe 'r ' . l:plugin_file
+"
+"  setl modeline
+"  let l:buf = bufnr("%")
+"  setl noswapfile modifiable
+"
+"  norm zR
+"  norm gg
+"
+"  " Delete from first line to a line starts with
+"  " === START_DOC
+"  1,/^=\{3,}\s\+START_DOC\C/ d
+"
+"  " Delete from a line starts with
+"  " === END_DOC
+"  " to the end of the documents:
+"  /^=\{3,}\s\+END_DOC\C/,$ d
+"
+"  " Remove fold marks:
+"  % s/{\{3}[1-9]/    /
+"
+"  " Add modeline for help doc: the modeline string is mangled intentionally
+"  " to avoid it be recognized by VIM:
+"  call append(line('$'), '')
+"  call append(line('$'), ' v' . 'im:tw=78:ts=8:ft=help:norl:')
+"
+"  " Replace revision:
+"  exe "normal :1s/#version#/ v" . a:revision . "/\<CR>"
+"
+"  " Save the help document:
+"  exe 'w! ' . l:doc_file
+"  exe l:go_back
+"  exe 'bw ' . l:buf
+"
+"  " Build help tags:
+"  exe 'helptags ' . l:vim_doc_path
+"
+"  return 0
+"endfun " s:InstallDocumentation
 
 " }}}
 " ===========================================================================
@@ -1671,13 +1671,13 @@ let s:revision =
 " Install the document:
 " NOTE: We must detect script name here. In a function, <sfile> will be
 "       expanded to the function name instead!
-silent! let s:install_status =
-    \ s:InstallDocumentation(expand('<sfile>:p'), s:revision)
-
-if (s:install_status == 0)
-    echomsg expand("<sfile>:t:r") . ' v' . s:revision .
-               \ ': Help-documentation installed.'
-endif
+"silent! let s:install_status =
+"    \ s:InstallDocumentation(expand('<sfile>:p'), s:revision)
+"
+"if (s:install_status == 0)
+"    echomsg expand("<sfile>:t:r") . ' v' . s:revision .
+"               \ ': Help-documentation installed.'
+"endif
 " }}}
 
 " ===========================================================================
